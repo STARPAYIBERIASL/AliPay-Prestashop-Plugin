@@ -1,4 +1,5 @@
 <?php
+#ini_set('display_errors', 1); ini_set('display_startup_errors', 1); error_reporting(E_ALL);
 /*
 * 2007-2015 PrestaShop
 *
@@ -48,7 +49,7 @@ class AlipayPlusPay extends PaymentModule
     {
         $this->name = 'alipaypluspay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.0';
+        $this->version = '1.7.1';
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Starpay';
         $this->controllers = array('payment', 'validation');

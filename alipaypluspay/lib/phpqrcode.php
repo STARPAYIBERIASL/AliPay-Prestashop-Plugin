@@ -1,4 +1,5 @@
 <?php
+if (class_exists('qrstr')) return ;
 
 /*
  * PHP QR Code encoder
