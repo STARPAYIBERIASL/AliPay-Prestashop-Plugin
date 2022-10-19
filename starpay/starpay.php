@@ -24,16 +24,13 @@
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class AlipayPlusPay extends PaymentModule
+class StarPay extends PaymentModule
 {
     const FLAG_DISPLAY_PAYMENT_INVITE = 'BANK_WIRE_PAYMENT_INVITE';
 
@@ -47,7 +44,7 @@ class AlipayPlusPay extends PaymentModule
 
     public function __construct()
     {
-        $this->name = 'alipaypluspay';
+        $this->name = 'starpay';
         $this->tab = 'payments_gateways';
         $this->version = '1.7.1';
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
@@ -63,14 +60,14 @@ class AlipayPlusPay extends PaymentModule
 
         $this->limited_currencies = array("AED","AFN","ALL","AMD","AOA","ANG","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BOV","BRL","BSD","BTN","BWP","BYR","BZD","CAD","CDF","CHF","CLP","CNY","COP","CRC","CUP","CUC","CVE","CZK","DJF","DKK","DOP","DZD","EUR","EGP","ERN","ETB","FJD","FKP","GBP","GEL","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","INR","IQD","IRR","ISK","JMD","JOD","JPY","KES","KGS","KHR","KMF","KRW","KPW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LYD","MAD","MDL","MGA","MRO","MKD","MMK","MNT","MOP","MUR","MVR","MWK","MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLL","SOS","SRD","SSP","STD","SYP","SZL","THB","TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","UYU","UZS","VEF","VND","VUV","WST","XAF","XCD","XOF","XPF","XSU","YER","ZAR","ZMW");
 
-        $this->displayName = $this->trans('AlipayPlus Pay', array(), 'Modules.AlipayPlusPay.Admin');
-        $this->description = $this->trans('Accept payments for your products via AlipayPlus Pay.', array(), 'Modules.AlipayPlusPay.Admin');
-        $this->confirmUninstall = $this->trans('Are you sure about removing these details?', array(), 'Modules.AlipayPlusPay.Admin');
+        $this->displayName = $this->trans('StarPay', array(), 'Modules.StarPay.Admin');
+        $this->description = $this->trans('Accept payments for your products via Wechat and AlipayPlus Pay.', array(), 'Modules.StarPay.Admin');
+        $this->confirmUninstall = $this->trans('Are you sure about removing these details?', array(), 'Modules.StarPay.Admin');
         if (!isset($this->owner) || !isset($this->details) || !isset($this->address)) {
-            $this->warning = $this->trans('Account owner and account details must be configured before using this module.', array(), 'Modules.AlipayPlusPay.Admin');
+            $this->warning = $this->trans('Account owner and account details must be configured before using this module.', array(), 'Modules.StarPay.Admin');
         }
         if (!count(Currency::checkPaymentCurrencies($this->id))) {
-            $this->warning = $this->trans('No currency has been set for this module.', array(), 'Modules.AlipayPlusPay.Admin');
+            $this->warning = $this->trans('No currency has been set for this module.', array(), 'Modules.StarPay.Admin');
         }
     }
 
@@ -85,11 +82,10 @@ class AlipayPlusPay extends PaymentModule
 
     public function uninstall()
     {
-      if (!Configuration::deleteByName('ALIPAYPLUSPAY_MODULO_ACCESS_ID')
-        || !Configuration::deleteByName('ALIPAYPLUSPAY_MODULO_MERCHANT_ID')
-        || !Configuration::deleteByName('ALIPAYPLUSPAY_MODULO_STORE_NO')
-        || !Configuration::deleteByName('BANK_WIRE_OWNER')
-        || !Configuration::deleteByName('ALIPAYPLUSPAY_APP_PRIVATE_KEY')
+      if (!Configuration::deleteByName('STARPAY_MODULO_ACCESS_ID')
+        || !Configuration::deleteByName('STARPAY_MODULO_MERCHANT_ID')
+        || !Configuration::deleteByName('STARPAY_MODULO_STORE_NO')
+        || !Configuration::deleteByName('STARPAY_APP_PRIVATE_KEY')
         || !parent::uninstall())
         return false;
       return true;
@@ -102,21 +98,20 @@ class AlipayPlusPay extends PaymentModule
 
     protected function postProcess()
     {
-        if (Tools::isSubmit('alipaypluspay')) {
+        if (Tools::isSubmit('starpay')) {
             $access_id = Tools::getValue('access_id');
             $merchantAccessNo = Tools::getValue('merchantAccessNo');
             $appPrivateKey = Tools::getValue('app_private_key');
             $storeNo = Tools::getValue('storeNo');
-            Configuration::updateValue('ALIPAYPLUSPAY_MODULO_ACCESS_ID', $access_id);
-            Configuration::updateValue('ALIPAYPLUSPAY_MODULO_MERCHANT_ID', $merchantAccessNo);
-            Configuration::updateValue('ALIPAYPLUSPAY_MODULO_STORE_NO', $storeNo);
-            Configuration::updateValue('ALIPAYPLUSPAY_APP_PRIVATE_KEY', $appPrivateKey);
+            Configuration::updateValue('STARPAY_MODULO_ACCESS_ID', $access_id);
+            Configuration::updateValue('STARPAY_MODULO_MERCHANT_ID', $merchantAccessNo);
+            Configuration::updateValue('STARPAY_MODULO_STORE_NO', $storeNo);
+            Configuration::updateValue('STARPAY_APP_PRIVATE_KEY', $appPrivateKey);
         }
-        // $this->_html .= $this->displayConfirmation($this->trans('Updated Successfully', array(), 'Admin.Global'));
         return $this->displayConfirmation($this->l('Updated Successfully'));
     }
 
-    protected function _displayAlipayPlusPay()
+    protected function _displayStarPay()
     {
         return $this->display(__FILE__, 'infos.tpl');
     }
@@ -131,22 +126,16 @@ class AlipayPlusPay extends PaymentModule
         if (!$this->active) {
             return;
         }
-
         if (!$this->checkCurrency($params['cart'])) {
             return;
         }
-
         global $cookie;
         if(!$cookie->isLogged()){
          return;
         }
-
         $cart = $this->context->cart;
-    		// if (!$this->checkCurrency($cart))
-    		// 	Tools::redirect('index.php?controller=order');
 
     		$customer = new Customer($cart->id_customer);
-
    		if(False) {
    			$this->smarty->assign(array(
    				'nbProducts' => $cart->nbProducts(),
@@ -181,20 +170,24 @@ class AlipayPlusPay extends PaymentModule
    				'url_phone' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/getpaydata.php',
    				// 'url_order' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'index.php?controller=history',
    				'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/',
-   				'qr_code' => $this->getQRCode(),
+   				'qr_code_wechat' => $this->getQRCodeWeChat(),
+   				'qr_code_alipayplus' => $this->getQRCodeAliPayPlus(),
    				'mobile' => False,
    			));
    		}
-
-        $newOption = new PaymentOption();
-        $newOption->setModuleName($this->name)
-                ->setCallToActionText($this->trans('支付宝+', array(), 'Modules.AlipayPlusPay.Shop'))
+        $newOptionAliPay = new PaymentOption();
+        $newOptionAliPay->setModuleName($this->name)
+                ->setCallToActionText($this->l('AlipayPlus Pay'))
                 ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
-                ->setAdditionalInformation($this->fetch('module:alipaypluspay/views/templates/hook/payment_execution.tpl'));
+                ->setAdditionalInformation($this->fetch('module:starpay/views/templates/hook/payment_execution_alipayplus.tpl'));
+        $newOptionWeChat = new PaymentOption();
+        $newOptionWeChat->setModuleName($this->name)
+                ->setCallToActionText($this->l('WeChat Pay'))
+                ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
+                ->setAdditionalInformation($this->fetch('module:starpay/views/templates/hook/payment_execution_wechat.tpl'));
         $payment_options = [
-            $newOption,
+            $newOptionAliPay, $newOptionWeChat,
         ];
-
         return $payment_options;
     }
 
@@ -270,8 +263,74 @@ class AlipayPlusPay extends PaymentModule
         return false;
     }
 
+    public function getQRCodeWeChat()
+    {
+  		  require_once 'lib/StarpayUtil.php';
 
-    public function getQRCode()
+    		$cart = $this->context->cart;
+
+    		$this->smarty->assign('module_dir', $this->_path);
+
+    		$totalAmont = (float)($cart->getOrderTotal(true, Cart::BOTH)*100);
+
+    		//Wechat interface
+    		$gatewayurl="https://api.starpayes.com/aps-gateway/entry.do";
+
+    		$bgRetUrl = Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/notify.php';
+
+    		// variables de retorno
+    		$total = (float)$cart->getOrderTotal(true, Cart::BOTH);
+    		$currency_contex = $this->context->currency;
+    		$customer = new Customer($cart->id_customer);
+
+    		$timestamp = date('Y-m-d H:i:s');
+        // $timestamp = date('2019-09-20 21:33:05');
+    		$orderID = $this->generateRandomString().$this->generateRandomString()."&".$cart->id."&".$currency_contex->id."&".$customer->secure_key;
+    		$currency = new Currency((int)$cart->id_currency);
+    		$currency = $currency->iso_code;
+    		$access_id = Configuration::get('STARPAY_MODULO_ACCESS_ID');
+    		$merchantAccessNo = Configuration::get('STARPAY_MODULO_MERCHANT_ID');
+    		$storeNo = Configuration::get('STARPAY_MODULO_STORE_NO');
+    		$app_private_key = Configuration::get('STARPAY_APP_PRIVATE_KEY');
+    		$subject = str_replace( '"' , '' , Configuration::get('PS_SHOP_NAME'));
+
+    		$config = array (
+    			//id assigned by por Starpay
+    			'access_id' => $access_id,
+    			//action type(see documentation)
+    			'type' => "2003",
+    			//default version is 1.0
+    			'version' => "1.0",
+    			//timestamp format yyyy-MM-dd HH:mm:ss
+    			'timestamp' => $timestamp,
+    			//see documentation for how to set up the content field
+    			'content' => "{merchantAccessNo:\"$merchantAccessNo\", orderNo: \"$orderID\", orderAmt: $totalAmont, subject: \"$subject\", currency: \"$currency\", bgRetUrl: \"$bgRetUrl\", storeNo: \"$storeNo\"}",
+    			//for now we are 100% exclusive with JSON.
+    			'format'=>"JSON",
+    			//See "message signature" in the documentation
+    			'sign' => ""
+    		);
+
+    		$clsName="StarpayUtil";
+    		$ret = $clsName::SignData($config, $app_private_key);
+    		$config["sign"]=$ret;
+
+    		$result = $clsName::curl($gatewayurl,$config);
+
+    		$array_result = json_decode($result, true);
+    		if ($array_result['code'] != 'R000') {
+    			$png = false;
+    		}
+    		else{
+    			$content_result = json_decode($array_result['content'], true);
+    			$url = $content_result['coreUrl'];
+    			$png = $this->createTempQrcode($url);
+    		}
+
+    		return $png;
+    }
+    
+    public function getQRCodeAliPayPlus()
     {
   		  require_once 'lib/StarpayUtil.php';
 
@@ -296,10 +355,10 @@ class AlipayPlusPay extends PaymentModule
     		$orderID = $this->generateRandomString()."&".$this->generateRandomString()."&".$cart->id."&".$currency_contex->id."&".$customer->secure_key;
     		$currency = new Currency((int)$cart->id_currency);
     		$currency = $currency->iso_code;
-    		$access_id = Configuration::get('ALIPAYPLUSPAY_MODULO_ACCESS_ID');
-    		$merchantAccessNo = Configuration::get('ALIPAYPLUSPAY_MODULO_MERCHANT_ID');
-    		$storeNo = Configuration::get('ALIPAYPLUSPAY_MODULO_STORE_NO');
-    		$app_private_key = Configuration::get('ALIPAYPLUSPAY_APP_PRIVATE_KEY');
+    		$access_id = Configuration::get('STARPAY_MODULO_ACCESS_ID');
+    		$merchantAccessNo = Configuration::get('STARPAY_MODULO_MERCHANT_ID');
+    		$storeNo = Configuration::get('STARPAY_MODULO_STORE_NO');
+    		$app_private_key = Configuration::get('STARPAY_APP_PRIVATE_KEY');
     		$subject = str_replace( '"' , '' , Configuration::get('PS_SHOP_NAME'));
 
     		$config = array (
@@ -319,14 +378,13 @@ class AlipayPlusPay extends PaymentModule
     			'sign' => ""
     		);
 
-    		$clsName="StarpayUtilAlipayPlusPay";
+    		$clsName="StarpayUtil";
     		$ret = $clsName::SignData($config, $app_private_key);
     		$config["sign"]=$ret;
 
     		$result = $clsName::curl($gatewayurl,$config);
 
     		$array_result = json_decode($result, true);
-    		//print_r($array_result);
     		if ($array_result['code'] != 'R000') {
     			$png = false;
     		}
@@ -361,10 +419,10 @@ class AlipayPlusPay extends PaymentModule
   		$orderID = $this->generateRandomString()."&".$cart->id."&".$currency_contex->id."&".$customer->secure_key;
   		$currency = new Currency((int)$cart->id_currency);
   		$currency = $currency->iso_code;
-  		$access_id = Configuration::get('ALIPAYPLUSPAY_MODULO_ACCESS_ID');
-  		$merchantAccessNo = Configuration::get('ALIPAYPLUSPAY_MODULO_MERCHANT_ID');
-  		$storeNo = Configuration::get('ALIPAYPLUSPAY_MODULO_STORE_NO');
-  		$app_private_key = Configuration::get('ALIPAYPLUSPAY_APP_PRIVATE_KEY');
+  		$access_id = Configuration::get('STARPAY_MODULO_ACCESS_ID');
+  		$merchantAccessNo = Configuration::get('STARPAY_MODULO_MERCHANT_ID');
+  		$storeNo = Configuration::get('STARPAY_MODULO_STORE_NO');
+  		$app_private_key = Configuration::get('STARPAY_APP_PRIVATE_KEY');
   		$subject = str_replace( '"' , '' , Configuration::get('PS_SHOP_NAME'));
 
   		$config = array (
@@ -384,7 +442,7 @@ class AlipayPlusPay extends PaymentModule
   			'sign' => ""
   		);
 
-  		$clsName="StarpayUtilAlipayPlusPay";
+  		$clsName="StarpayUtil";
   		$ret = $clsName::SignData($config, $app_private_key);
   		$config["sign"]=$ret;
 
@@ -430,38 +488,38 @@ class AlipayPlusPay extends PaymentModule
           $helper->allow_employee_form_lang = $this->context->controller->allow_employee_form_lang;
           $helper->title = $this->displayName;
 
-          $helper->submit_action = 'alipaypluspay';
-          $helper->fields_value['app_private_key'] = Configuration::get('ALIPAYPLUSPAY_APP_PRIVATE_KEY');
-          $helper->fields_value['access_id'] = Configuration::get('ALIPAYPLUSPAY_MODULO_ACCESS_ID');
-          $helper->fields_value['merchantAccessNo'] = Configuration::get('ALIPAYPLUSPAY_MODULO_MERCHANT_ID');
-          $helper->fields_value['storeNo'] = Configuration::get('ALIPAYPLUSPAY_MODULO_STORE_NO');
+          $helper->submit_action = 'starpay';
+          $helper->fields_value['app_private_key'] = Configuration::get('STARPAY_APP_PRIVATE_KEY');
+          $helper->fields_value['access_id'] = Configuration::get('STARPAY_MODULO_ACCESS_ID');
+          $helper->fields_value['merchantAccessNo'] = Configuration::get('STARPAY_MODULO_MERCHANT_ID');
+          $helper->fields_value['storeNo'] = Configuration::get('STARPAY_MODULO_STORE_NO');
 
           $this->form[0] = array(
               'form' => array(
                   'legend' => array(
                   	'title' => $this->displayName,
-  					        'a' => 'http://codeals.es'
+  					        'a' => 'http://starpay.es'
                   ),
                   'input' => array(
                     	array(
   						'type' => 'text',
-  						'label' => $this->l('Numero de acceso'),
-  						'desc' => $this->l('Access ID'),
+  						'label' => $this->l('Access ID'),
+  						'desc' => $this->l('Access ID provided by Starpay'),
   						'hint' => $this->l('A123121213'),
   						'name' => 'access_id',
   						'lang' => false,
                      	),
   				    array(
   						'type' => 'text',
-  						'label' => $this->l('Número del comercio'),
-  						'desc' => $this->l('Merchant Access Number'),
+  						'label' => $this->l('Merchant Access Number'),
+  						'desc' => $this->l('Merchant Access Number provided by Starpay'),
   						'hint' => $this->l('B553121213'),
   						'name' => 'merchantAccessNo',
   						'lang' => false,
   					),
   					array(
   						'type' => 'text',
-  						'label' => $this->l('Número de Tienda'),
+  						'label' => $this->l('Store Number'),
   						'desc' => $this->l('Store Number'),
   						'hint' => $this->l('000'),
   						'name' => 'storeNo',
@@ -469,7 +527,7 @@ class AlipayPlusPay extends PaymentModule
   					  ),
                      	array(
   						'type' => 'textarea',
-  						'label' => $this->l('Clave Privada'),
+  						'label' => $this->l('Private Key'),
   						'desc' => $this->l('Private Key'),
   						'hint' => $this->l('-----BEGIN RSA PRIVATE KEY-----'),
   						'name' => 'app_private_key',
